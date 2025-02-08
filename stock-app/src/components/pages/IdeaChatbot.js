@@ -102,7 +102,7 @@ const IdeaChatbot = () => {
   };
 
   return (
-    <div className="flex flex-col max-h-full max-w-screen mx-auto bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col max-h-full max-w-screen bg-white rounded-lg shadow-lg">
       {/* Chat Header */}
       <div className="flex items-center space-x-2 p-4 border-b bg-blue-50 rounded-t-lg max-h-full ticky top-0">
         <Bot className="w-6 h-6 text-blue-600 ticky top-0" />

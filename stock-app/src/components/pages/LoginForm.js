@@ -4,7 +4,8 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Textarea } from '../ui/textarea';
-import { authAPI } from '../services/api';
+
+import axios from 'axios';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const LoginForm = () => {
     setError('');
 
     try {
-      const response = await authAPI.login(credentials);
+      const response = await axios.post("http://localhost:5000/login",credentials);
       localStorage.setItem('token', response.data.token);
       navigate('/bus');
     } catch (err) {

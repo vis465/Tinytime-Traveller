@@ -4,8 +4,8 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Textarea } from '../ui/textarea';
-import { authAPI } from '../services/api';
 
+import axios from 'axios';
 const SignupForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -33,9 +33,9 @@ const SignupForm = () => {
     setError('');
 
     try {
-      const response = await authAPI.signup(formData);
+      const response = await axios.post("http://localhost:5000/signup",formData);
       localStorage.setItem('token', response.data.token);
-      navigate('/login');
+      navigate('/bus');
     } catch (err) {
       setError(err.response?.data?.error || 'An error occurred during signup');
     } finally {
