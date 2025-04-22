@@ -3,8 +3,8 @@
 /* Base container */
 .storify-container {
   width: 100%;
-  min-height: 100vh;
-  padding: 20px;
+  min-height: 100%;
+  padding: 10px;
   font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
   transition: all 0.5s ease;
   overflow: hidden;
@@ -43,13 +43,13 @@
 
 /* Theme modes with improved gradients */
 .light-mode {
-  background: linear-gradient(135deg, #ff58c4, #c0e0ff);
-  color: #d778c9;
+  background: linear-gradient(135deg, #e56bba9a, #e9c0ff);
+  color: #e73da3db;
 }
 
 .dark-mode {
-  background: linear-gradient(135deg, #754ec2, #6a2f8d);
-  color: #c691de;
+  background: linear-gradient(135deg, #ad8fe9c8, #954cbfd6);
+  color: #6a16d8;
 }
 
 /* Header styling with bounce effect */

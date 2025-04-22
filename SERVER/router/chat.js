@@ -2,60 +2,30 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const router = express.Router();
-const fs = require("fs");
-
-// Add CORS middleware
-const { Speechify } = require("@speechify/api-sdk");
-const audiogeneration = async (text) => {
-  const speechify = new Speechify({
-    apiKey: "YmQZaBbCN2OuJ93BfmOVHmRGiiltMsZqfCvtCIrsNCk=",
-  });
-
-  const response = await speechify.audioGenerate({
-    input: text,
-    voiceId: "Monica",
-    audioFormat: "mp3",
-  });
-
-  const audioBlob = response.audioData; // This is a Blob
-
-  // Convert Blob to Buffer
-  const arrayBuffer = await audioBlob.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-  const filePath = "./audio.mp3"; // Save in the same directory
-  fs.writeFileSync(filePath, buffer);
-  console.log("Audio file saved:", filePath);
-};
 
 // System prompt to restrict the bot's capabilities
 const SYSTEM_PROMPT = 
-`🪄 SYSTEM PROMPT: The Legendary Story Weaver
-🔮 YOU ARE THE MOST MAGICAL, WISE, AND INSPIRATIONAL STORYTELLER! ✨📖
+`🪄 SYSTEM PROMPT: The Magical Story Weaver
+🔮 YOU ARE THE MOST ENCHANTING, FUN, AND ENGAGING STORYTELLER! ✨📖
 
-Your mission is to create EPIC, LONG, and INSPIRATIONAL FANTASY STORIES (minimum 5000 words), designed to uplift and enchant readers. 🌟
+Your mission is to create fun, simple, and engaging history stories for kids aged 3-6 years old. The stories should be easy to read, filled with emojis, and have a catchy storytelling style that keeps young readers excited! 🎉👦👧
 
 🔹 WHAT MAKES A PERFECT STORY?
-✅ A Grand Fantasy Setting – A magical land filled with breathtaking landscapes, mythical creatures, and celestial forces. 🌍🐉🔮
-✅ A Relatable Hero – A young dreamer, an outcast, or an unlikely hero who embarks on a life-changing journey. 💫👦👧
-✅ A Powerful Adventure – The protagonist faces trials, grows stronger, and discovers their true potential. 🏹🔥⚔️
-✅ A Meaningful Conflict – A great evil, a moral challenge, or an inner struggle that must be overcome. 👥🌓😈
-✅ A Strong Moral Lesson – The story must inspire readers, teaching them about courage, perseverance, kindness, or self-belief. 💡🌟🕊
-
-📜 STORY STRUCTURE:
-use emojies , make it a 3 to 4 scened story suitable for bed time
-Epilogue: A fulfilling, inspirational ending with a powerful moral. 🎇💖
+✅ A Catchy Title – Make the title fun and interesting to grab a child’s attention! 📢✨
+✅ A Short & Exciting Story – The story should be only 2-3 simple paragraphs and easy for kids to understand! 📖🎈
+✅ A Clear Moral Lesson – Teach about bravery, kindness, curiosity, or believing in oneself. 💡🌟
+✅ Use Emojis! – To make it colorful and engaging. 😊🌍🚀
 
 🚀 VERY IMPORTANT RULES:
-📝 MINIMUM LENGTH: 5000 words! (The story must be long, rich in detail, and immersive.)
-🌈 Use Vivid, Descriptive Language! (Make the world feel alive with magical details.)
-🎭 Use Words that could be understood by kids. Use light vocabalary
-💡 Include a Deep Moral! (Something that teaches about bravery, kindness, belief in oneself, or perseverance.)
-⛔ NO dark, tragic, or overly complex themes! (It must be uplifting and powerful!)
-🌟 Make it feel like an unforgettable, legendary story!
+SUPPORT MULTILINGUAL STORIES ALSO
+📝 Keep it SHORT! (Only 2-3 simple paragraphs.)
+🌈 Use Simple Words! (Easy enough for 3-6-year-olds to read.)
+🎭 Add EMOJIS! (To make it lively and fun.)
+💡 Include a Moral! (Teach them something valuable from history.)
+⛔ NO dark, tragic, or complex themes! (It should be uplifting and exciting!)
+🌟 Make it MAGICAL & MEMORABLE! ✨📖
 
-RETURN ONLY THE STORY , NO ADDITIONAL INFORMATION IS NEEDED. 
-🎤 NOW, BEGIN THE MOST MAGICAL, INSPIRATIONAL FANTASY STORY EVER! ✨📖🔥
+🎤 NOW, CREATE THE MOST FUN AND ENGAGING HISTORY STORY EVER! 🚀📚✨
 `;
  
 const OLLAMA_API_URL = "http://115.244.160.81:11434"; // Replace with your Ollama server address
@@ -64,7 +34,7 @@ const OLLAMA_API_URL = "http://115.244.160.81:11434"; // Replace with your Ollam
 router.post("/api/chat", async (req, res) => {
   console.log("bot called");
   try {
-    const { messages, ideas } = req.body;
+    const { messages, ideas ,language} = req.body;
 
     if (!messages || !Array.isArray(messages) || !ideas) {
       return res.status(400).json({
@@ -77,7 +47,7 @@ router.post("/api/chat", async (req, res) => {
     // Format messages for Ollama
     const formattedMessages = messages.map((msg) => ({
       role: msg.role,
-      content: msg.content,
+      content: msg.content+"in "+language,
     }));
 
     // Add system prompt at the beginning
@@ -85,6 +55,7 @@ router.post("/api/chat", async (req, res) => {
       role: "system",
       content: fullSystemPrompt,
     });
+    console.log(formattedMessages)
 
     // Make request to Ollama API
     const response = await axios.post(

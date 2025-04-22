@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 export default function KidsChatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [language, setLanguage] = useState("English"); // Default language
   const [loading, setLoading] = useState(false);
   const [audioSrc, setAudioSrc] = useState(null);
   const [videoSrc, setVideoSrc] = useState(null);
@@ -18,6 +19,7 @@ export default function KidsChatbot() {
   
   // Ref for speech recognition
   const recognitionRef = useRef(null);
+
   function createShapes() {
     const container = document.querySelector('.floating-shapes');
     const shapes = ['circle', 'star', 'square'];
@@ -37,6 +39,7 @@ export default function KidsChatbot() {
       container.appendChild(shape);
     }
   }
+
   useEffect(() => {
     // Initialize Web Speech API for synthesis
     if (window.speechSynthesis) {
@@ -78,7 +81,7 @@ export default function KidsChatbot() {
     // Initial welcome message
     setTimeout(() => {
       if (messages.length === 0) {
-        const welcomeMessage = "Hi there, friend! I'm Tiny TIme Traveller, your magical story buddy! What kind of adventure would you like to hear today? 🦄✨";
+        const welcomeMessage = "Hi there, friend! I'm Tiny Time Travellers, your magical story buddy! What kind of adventure would you like to hear today? 🦄✨";
         setMessages([
           { 
             role: "bot", 
@@ -124,8 +127,7 @@ export default function KidsChatbot() {
         utterance.rate = 1.0;
     }
     
-    // Get available voices (this might need to be moved to useEffect with a timeout
-    // since voices are loaded asynchronously in some browsers)
+    // Get available voices
     const voices = speechSynthesis.getVoices();
     const kidVoices = voices.filter(voice => 
       voice.name.includes("Kid") || 
@@ -140,9 +142,6 @@ export default function KidsChatbot() {
     
     speechSynthesis.speak(utterance);
   };
-
-  // Enhanced audio generation with emotion
-  
 
   // Simple emotion detection from text
   const detectTextEmotion = (text) => {
@@ -165,12 +164,15 @@ export default function KidsChatbot() {
   const generateVideo = async (text) => {
     try {
       setBotMood("excited");
-      const response = await axios.post("http://localhost:4000/generate-video", { story: text });
+      window.alert("Your video is being generated. Please come back in some time to view it.");
 
-      // Notify user
-      alert("Your video is being generated. Please come back in some time to view it.");
-
+      const response = await axios.post("http://localhost:4000/generate-video", { 
+        story: text,
+        language: language // Send the language to the video generation API
+      });
+      
       setBotMood("happy");
+      // Notify user
     } catch (error) {
       console.error("Error fetching video:", error);
       setBotMood("sad");
@@ -178,7 +180,6 @@ export default function KidsChatbot() {
     }
   };
   
-
   // Start voice recording with browser Speech Recognition
   const startRecording = () => {
     if (!recognitionRef.current) {
@@ -210,16 +211,20 @@ export default function KidsChatbot() {
     const messageText = text || input;
     if (!messageText.trim()) return;
 
+    // Create new messages array with the user message
     const newMessages = [...messages, { role: "user", content: messageText }];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
     setBotMood("thinking");
-
+    
+    console.log("Sending language to API:", language);
+    
     try {
       const response = await axios.post("http://localhost:4000/api/chat", {
         messages: newMessages,
         ideas: {},
+        language: language, // Send the language to the backend
       });
       
       if (response.data.ok) {
@@ -246,6 +251,7 @@ export default function KidsChatbot() {
         setTimeout(() => setBotMood("happy"), 3000);
       }
     } catch (error) {
+      console.error("Error sending message:", error);
       setBotMood("sad");
       setMessages([...newMessages, { 
         role: "bot", 
@@ -255,6 +261,13 @@ export default function KidsChatbot() {
       setTimeout(() => setBotMood("happy"), 3000);
     }
     setLoading(false);
+  };
+
+  // Handle language change
+  const handleLanguageChange = (e) => {
+    const selectedLanguage = e.target.value;
+    setLanguage(selectedLanguage);
+    console.log("Language changed to:", selectedLanguage);
   };
 
   const toggleDarkMode = () => {
@@ -286,7 +299,7 @@ export default function KidsChatbot() {
       {showIntro && (
         <div className="intro-animation">
           <div className="intro-text bounce">
-            📚 Tiny TIme Traveller! 📚
+            📚 Tiny Time Travellers! 📚
           </div>
         </div>
       )}
@@ -295,7 +308,7 @@ export default function KidsChatbot() {
       <div className="storify-header">
         <h1 className="app-title">
           <span className="book-icon">📚</span> 
-          Tiny TIme Traveller 
+          Tiny Time Travellers 
           <span className="sparkle-icon pulse">✨</span>
         </h1>
         <button 
@@ -304,6 +317,8 @@ export default function KidsChatbot() {
         >
           {isDarkMode ? '☀️' : '🌙'}
         </button>
+        <a href="/video" style={{textDecoration:"none"}}>
+        <button  className="story-starters" >generated videos</button> </a>
       </div>
 
       {/* Bot character */}
@@ -325,17 +340,12 @@ export default function KidsChatbot() {
             
             {msg.role === "bot" && (
               <div className="message-actions">
-                <button 
-                  className="action-btn listen-btn"
-                  onClick={() => speakWithEmotion(messages.content, "happy")}
-                >
-                  🎵 Listen
-                </button>
+                
                 <button 
                   className="action-btn watch-btn"
                   onClick={() => generateVideo(msg.content)}
                 >
-                  🎬 Watch
+                  🎬 Generate Video
                 </button>
               </div>
             )}
@@ -364,7 +374,7 @@ export default function KidsChatbot() {
         ))}
       </div>
 
-      {/* Input area with voice recording */}
+      {/* Input area with voice recording and language selection */}
       <div className="input-container">
         <input
           type="text"
@@ -374,6 +384,15 @@ export default function KidsChatbot() {
           placeholder="Tell me what story you want..."
           className="message-input"
         />
+        <select
+          value={language}
+          onChange={handleLanguageChange}
+          className="language-select"
+        >
+          <option value="English">English</option>
+          <option value="Tamil">Tamil</option>
+          <option value="Hindi">Hindi</option>
+        </select>
         <button
           onClick={isRecording ? stopRecording : startRecording}
           className={`voice-btn ${isRecording ? 'recording' : ''}`}
@@ -391,8 +410,6 @@ export default function KidsChatbot() {
       </div>
 
       {/* Media players */}
-      
-
       {videoSrc && (
         <div className="media-container video-container">
           <h3 className="media-title">Story Video 🎬</h3>

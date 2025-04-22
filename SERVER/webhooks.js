@@ -32,7 +32,7 @@ router.post('/video', async (req, res) => {
   }
 });
 
-router.get('/video/latest', async (req, res) => {
+router.get('/videos', async (req, res) => {
   try {
     const latestVideo = await Video.findOne().sort({ _id: -1 }).exec();
     
